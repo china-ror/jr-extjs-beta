@@ -1,5 +1,5 @@
 module Ext
-  class Json < Hash
+  class Json < HashWithIndifferentAccess
  
        def initialize(hash={})
            super
