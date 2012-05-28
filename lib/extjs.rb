@@ -24,6 +24,7 @@ require 'Ext/record_form'
 
 require 'Ext/init'
 require 'Ext/find'
+require 'Ext/search'
 
 Ext::Init.load_locales
 Ext::Init.define_exts
