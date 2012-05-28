@@ -1,5 +1,4 @@
 # Extjs
-#
 
 EXT_DEBUG = (not RAILS_ENV == 'production')
 
