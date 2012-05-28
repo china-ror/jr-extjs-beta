@@ -2,16 +2,15 @@ module Ext
   class RecordForm
     
     attr_reader :global,:active_record
-    def initialize(global,active_record)
-        @global = global
+    def initialize(active_record)
         @active_record = active_record
     end
 
     def check_box(attr,options={})
         init_options(attr,options)
-        options[:inputValue] = options[:value]
+        options[:checked] = options[:inputValue].eql?(options[:value])
         Ext::Form::CheckBox.new(options)
-    end   
+    end
 
     def combo_box(attr,options={})
         init_options(attr,options)
@@ -53,6 +52,7 @@ module Ext
 
     def radio(attr,options={})
         init_options(attr,options)
+        options[:checked] = options[:inputValue].eql?(options[:value])
         Ext::Form::Radio.new(options)
     end
 

@@ -75,6 +75,11 @@ module Ext
                     @@global
                 end
            end
+           Ext::RecordForm.class_eval do
+                def global
+                    @@global
+                end
+           end
            ApplicationHelper.module_eval do
                 def global
                     @@global
