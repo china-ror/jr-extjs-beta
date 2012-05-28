@@ -9,5 +9,6 @@ class <%=@cls%> < <%=@extend%>
     def ext
         '<%=@ext%>'
     end
+
 end
 

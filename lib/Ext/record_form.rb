@@ -33,6 +33,7 @@ module Ext
 
     def hidden(attr,options={})
         init_options(attr,options)
+        options.delete :fieldLabel 
         Ext::Form::Hidden.new(options)
     end
 
@@ -82,9 +83,13 @@ module Ext
         options[:name] = "#{model_name}[#{attr}]"
         options[:id] = "#{model_name}_#{attr}" if not options[:id]
         options[:value] = @active_record[attr]
-        if not options[:fieldlabel]
+        if not options[:fieldLabel]
           _name = model_name.titlecase.downcase.gsub(' ','_')
-          options[:fieldlabel] = global.t("#{_name}_#{attr}".to_sym)
+          if global
+             options[:fieldLabel] = global.t("#{_name}_#{attr}".to_sym)
+          else
+             options[:fieldLabel] = "#{_name}_#{attr}".titlecase 
+          end
         end
     end
 
