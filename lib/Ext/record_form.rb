@@ -1,7 +1,7 @@
 module Ext
   class RecordForm
     
-    attr_reader :global,:active_record
+    attr_reader :active_record
     def initialize(active_record)
         @active_record = active_record
     end
@@ -85,8 +85,8 @@ module Ext
         options[:value] = @active_record[attr]
         if not options[:fieldLabel]
           _name = model_name.titlecase.downcase.gsub(' ','_')
-          if global
-             options[:fieldLabel] = global.t("#{_name}_#{attr}".to_sym)
+          if @active_record.global
+             options[:fieldLabel] = @active_record.global.t("#{_name}_#{attr}".to_sym)
           else
              options[:fieldLabel] = "#{_name}_#{attr}".titlecase 
           end
@@ -95,4 +95,12 @@ module Ext
 
   end
 end
+
+
+ActiveRecord::Base.send(:include,Module.new do
+      def form
+          Ext::RecordForm.new(self)
+      end
+end)
+
 
