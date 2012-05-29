@@ -84,7 +84,7 @@ module Ext
         options[:id] = "#{model_name}_#{attr}" if not options[:id]
         options[:value] = @active_record[attr]
         if not options[:fieldLabel]
-          _name = model_name.titlecase.downcase.gsub(' ','_')
+          _name = model_name.underscore
           if @active_record.global
              options[:fieldLabel] = @active_record.global.t("#{_name}_#{attr}".to_sym)
           else

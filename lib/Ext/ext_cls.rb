@@ -122,6 +122,11 @@ EXT_CLS = [
             {:class=>'Ext::Grid::CellSelectionModel',:extend=>'Ext::Grid::AbstractSelectionModel',:ext=>'Ext.grid.CellSelectionModel'},
             {:class=>'Ext::Grid::RowSelectionModel',:extend=>'Ext::Grid::AbstractSelectionModel',:ext=>'Ext.grid.RowSelectionModel'},
             {:class=>'Ext::Grid::CheckboxSelectionModel',:extend=>'Ext::Grid::RowSelectionModel',:ext=>'Ext.grid.CheckboxSelectionModel'},
+            
+            #Template
+            {:class=>'Ext::Template',:extend=>'Ext::Object',:ext=>'Ext.Template'},
+            {:class=>'Ext::XTemplate',:extend=>'Ext::Template',:ext=>'Ext.Template'},
+          
 
          ]
 
