@@ -125,7 +125,7 @@ EXT_CLS = [
             
             #Template
             {:class=>'Ext::Template',:extend=>'Ext::Object',:ext=>'Ext.Template'},
-            {:class=>'Ext::XTemplate',:extend=>'Ext::Template',:ext=>'Ext.Template'},
+            {:class=>'Ext::XTemplate',:extend=>'Ext::Template',:ext=>'Ext.XTemplate'},
           
 
          ]
