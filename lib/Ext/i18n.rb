@@ -4,7 +4,7 @@ module I18N
  
   def self.load_locales(path=nil)
       Dir[path + '/locales/*.rb'].each do |rb|
-         LOCALES.update(File.basename(rb,'.rb')=>eval(File.new(rb,'r').read.strip))
+         LOCALES.update(File.basename(rb,'.rb')=>eval('HashWithIndifferentAccess.new(' + File.new(rb,'r').read.strip + ')'))
       end 
   end
 
