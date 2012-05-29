@@ -6,10 +6,6 @@
         @htmls = htmls
     end
  
-    def ext
-        'Ext.Template'
-    end
-    
     def html_arrays
         (@htmls.collect do |html|
             html.escape_str
