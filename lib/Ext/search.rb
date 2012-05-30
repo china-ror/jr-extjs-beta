@@ -57,23 +57,35 @@ class Search
              case oper
              when :any then
                 value = "%#{value}%"
+                sqlparams << value
              when :starts then
                 value = "#{value}%"
+                sqlparams << value
              when :ends then
                 value = "%#{value}"
+                sqlparams << value
              when :between then
                 bw= between(value)
                 oper = bw.first
                 value = bw.last
+                if oper == :between
+                   sqlparams.concat value
+                else
+                   sqlparams << value
+                end
              else
+                sqlparams << value
              end
-             sqlparams << value
              eval('"' + LOGICALS[oper] + '"')
            else
              '1 = 1'
            end
       end
-      {:params=>sqlparams,:conds=>formats}
+      if formats.blank?
+        []
+      else
+        [formats].concat sqlparams
+      end
   end
 
   protected

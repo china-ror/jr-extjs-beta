@@ -4,7 +4,7 @@ ActiveRecord::Base.class_eval do
      VALID_FIND_OPTIONS << :params
      def find(*args,&block)
        options = args.extract_options!
-       options.delete_if{|k,v| v.blank?}
+       options.delete_if{|k,v| [v].join.blank?}
        validate_find_options(options)
        set_readonly_option!(options)
        before_options!(options)

@@ -94,6 +94,32 @@ module Ext
     end
 
   end
+
+  class SearchForm
+    attr_reader :active_record
+    def initialize(active_record)
+        @active_record = active_record
+    end
+    
+    protected 
+    def init_options(attr,options)
+        model_name = @active_record.class.name
+        options[:name] = "#{model_name}[#{attr}]"
+        options[:id] = "#{model_name}_#{attr}" if not options[:id]
+        options[:value] = @active_record[attr]
+        if not options[:fieldLabel]
+          _name = model_name.underscore
+          if @active_record.global
+             options[:fieldLabel] = @active_record.global.t("#{_name}_#{attr}".to_sym)
+          else
+             options[:fieldLabel] = "#{_name}_#{attr}".titlecase 
+          end
+        end
+    end
+
+
+  end
+
 end
 
 
