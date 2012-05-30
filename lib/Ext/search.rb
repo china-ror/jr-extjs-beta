@@ -27,13 +27,7 @@ class Search
       init_params
   end
 
-  def copy(key,*to_keys)
-      to_keys.each do |to_key|
-          @params[to_key] = @params[key]
-      end
-  end 
-
-  def formats(frees=nil)
+  def generate(frees=nil)
       skip_keys = []
       formats = ''
       searchs_clone = @searchs.clone
@@ -54,32 +48,71 @@ class Search
       sqlparams = []
       formats.gsub!(KEY_REGEX) do |m|
           opt = @searchs[m]
-          oper = opt[:oper]
-          table = opt[:table]
-          field = opt[:field]
-          column = "#{ActiveRecord::Base.connection.quote_table_name(table)}.#{ActiveRecord::Base.connection.quote_column_name(field)}"
-          case oper
-          when :eq then
-
-          when :ne then
-
-          else
-
-          end
-          sqlparams << opt[:value]
-          eval('"' + LOGICALS[oper] + '"')
+          if opt
+             oper = opt[:oper]
+             table = opt[:table]
+             field = opt[:field]
+             value = opt[:value]
+             column = "#{ActiveRecord::Base.connection.quote_table_name(table)}.#{ActiveRecord::Base.connection.quote_column_name(field)}"
+             case oper
+             when :any then
+                value = "%#{value}%"
+             when :starts then
+                value = "#{value}%"
+             when :ends then
+                value = "%#{value}"
+             when :between then
+                bw= between(value)
+                oper = bw.first
+                value = bw.last
+             else
+             end
+             sqlparams << value
+             eval('"' + LOGICALS[oper] + '"')
+           else
+             '1 = 1'
+           end
       end
       {:params=>sqlparams,:conds=>formats}
   end
 
   protected
+  def between(value)
+      oper = :between
+      new_value = value
+      if value.instance_of?(Array)
+         case value.size
+         when 1 then
+           oper = :eq
+           new_value = value.first 
+         when 2 then
+           if(value.first.blank? and not value.last.blank?)
+              oper = :le
+              new_value = value.last 
+           end
+           if(not value.first.blank? and value.last.blank?)
+              oper = :ge
+              new_value = value.first 
+           end
+         else
+           oper = :in
+         end        
+      else
+         oper = :eq
+      end
+      [oper,new_value]
+  end
+
   def init_params
       @params.each do |param|
            kr = param[0].to_s.scan(KEY_REGEX).first
            if kr
-              @tables << kr.last
-              @fields << "#{kr.last}.#{kr[1]}"
-              @searchs[param[0]] = {:value=>param[1],:table=>kr.last,:field=>kr[1],:oper=>kr.first.to_sym}
+              value = param[1]
+              if not [value].join.blank?
+                 @tables << kr.last
+                 @fields << "#{kr.last}.#{kr[1]}"
+                 @searchs[param[0]] = {:value=>value,:table=>kr.last,:field=>kr[1],:oper=>kr.first.to_sym}
+              end
            end
       end
       @tables.uniq!
