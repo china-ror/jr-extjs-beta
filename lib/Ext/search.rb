@@ -24,10 +24,10 @@ class Search
       @params = params || HashWithIndifferentAccess.new
       @tables = []
       @fields = []
-      init_params
   end
 
   def generate(frees=nil)
+      init_params
       skip_keys = []
       formats = ''
       searchs_clone = @searchs.clone
@@ -131,8 +131,5 @@ class Search
       @fields.uniq!
   end
 
-  def class_exist?(cls)
-       eval("defined?(#{cls}) && #{cls}.is_a?(Class)") == true
-  end
 
 end
