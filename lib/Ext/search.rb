@@ -17,36 +17,31 @@ class Search
 
   KEY_REGEX = /(eq|ne|gt|lt|ge|le|any|starts|ends|between|in|ni){1}_(\w+)_(for)_(\w+)/
 
-  attr_reader:tables,:fields,:params,:searchs
+  attr_reader:tables,:fields,:search_hash,:searchs,:where,:params
 
-  def initialize(params={})
+  def initialize(search_hash={})
       @searchs = HashWithIndifferentAccess.new
-      @params = params || HashWithIndifferentAccess.new
+      @search_hash = search_hash || HashWithIndifferentAccess.new
       @tables = []
       @fields = []
+      init_search_hash
   end
 
-  def generate(frees=nil)
-      init_params
+  def generate(and_or='AND',&block)
       skip_keys = []
-      formats = ''
       searchs_clone = @searchs.clone
-      if not frees.blank?
-         skip_keys = frees.scan(KEY_REGEX).collect { |skip| skip.join('_') }
+      free_where = block.call if block
+      if not free_where.blank?
+         skip_keys = free_where.scan(KEY_REGEX).collect { |skip| skip.join('_') }
          searchs_clone.delete_if {|k,v| skip_keys.include?(k.to_s)}
-         formats << frees
       end
-      autos = searchs_clone.keys.join(' AND ')
-      if not autos.blank?
-         formats << ' AND ' if not frees.blank? 
-         formats << autos
+      @where = (([free_where].concat(searchs_clone.keys).delete_if{|v| v.blank?}).join(" #{and_or} ") || '').strip
+      if not @where.blank?
+         @where.insert(0,'(')
+         @where.insert(-1,')')
       end
-      if not formats.blank?
-         formats.insert(0,'(')
-         formats.insert(-1,')')
-      end
-      sqlparams = []
-      formats.gsub!(KEY_REGEX) do |m|
+      @params = []
+      @where.gsub!(KEY_REGEX) do |m|
           opt = @searchs[m]
           if opt
              oper = opt[:oper]
@@ -57,38 +52,56 @@ class Search
              case oper
              when :any then
                 value = "%#{value}%"
-                sqlparams << value
+                @params << value
              when :starts then
                 value = "#{value}%"
-                sqlparams << value
+                @params << value
              when :ends then
                 value = "%#{value}"
-                sqlparams << value
+                @params << value
+             when :in then
+                @params << in_fun(value)
+             when :ni then
+                @params << ni(value)
              when :between then
                 bw= between(value)
                 oper = bw.first
                 value = bw.last
                 if oper == :between
-                   sqlparams.concat value
+                   @params.concat value
                 else
-                   sqlparams << value
+                   @params << value
                 end
              else
-                sqlparams << value
+                @params << value
              end
              eval('"' + LOGICALS[oper] + '"')
            else
              '1 = 1'
            end
       end
-      if formats.blank?
+      if @where.blank?
         []
       else
-        [formats].concat sqlparams
+        [@where].concat @params
       end
   end
 
   protected
+  def in_fun(value)
+      new_value = value
+      if value.instance_of?(Array)
+         new_value.delete_if{|v| v.blank?}
+      else
+         new_value = [value]
+      end
+      new_value
+  end
+
+  def ni(value)
+      in_fun(value)
+  end
+
   def between(value)
       oper = :between
       new_value = value
@@ -108,6 +121,7 @@ class Search
            end
          else
            oper = :in
+           new_value.delete_if {|v| v.blank?}
          end        
       else
          oper = :eq
@@ -115,21 +129,22 @@ class Search
       [oper,new_value]
   end
 
-  def init_params
-      @params.each do |param|
-           kr = param[0].to_s.scan(KEY_REGEX).first
+  def init_search_hash
+      @search_hash.each do |arr|
+           kr = arr[0].to_s.scan(KEY_REGEX).first
            if kr
-              value = param[1]
+              value = arr[1]
               if not [value].join.blank?
-                 @tables << kr.last
+                 table = kr.last.downcase
+                 @tables << table
                  @fields << "#{kr.last}.#{kr[1]}"
-                 @searchs[param[0]] = {:value=>value,:table=>kr.last,:field=>kr[1],:oper=>kr.first.to_sym}
+                 value.strip! if value.instance_of?(String)
+                 @searchs[arr[0]] = {:value=>value,:table=>table,:field=>kr[1].downcase,:oper=>kr.first.to_sym}
               end
            end
       end
       @tables.uniq!
       @fields.uniq!
   end
-
 
 end
